@@ -75,6 +75,7 @@ public class Main {
 			fileWriter.write("""
 				No categories set
 				No ingredients set
+				Not rated yet
 				No instructions written
 				""");
 			fileWriter.close();
@@ -99,11 +100,47 @@ public class Main {
 				editIng();
 				break;
 			case "3":
+				editRating();
+				break;
+			case "4":
 				editIns();
 				break;
 			default:
 				whichConf();
 		}
+	}
+	
+	private void editRating() throws FileNotFoundException {
+		System.out.print("Give recipe a rating of 1-5 out of 5: ");
+		String rating = action.nextLine().strip();
+		
+		switch (rating) {
+			case "1", "2", "3", "4", "5":
+				break;
+			default:
+				System.out.println("Rating must be an integer between 1 and 5");
+				editRating();
+				return;
+		}
+		
+		Scanner input = new Scanner(new File(con + ".dat"));
+		String cat = input.nextLine();
+		String ing = input.nextLine();
+		String rat = input.nextLine();
+		
+		try { 
+			FileWriter fileWriter = new FileWriter(con + ".dat");
+			fileWriter.write(cat + "\n");
+			fileWriter.write(ing + "\n");
+			fileWriter.write(rating + "\n");
+			
+			while (input.hasNextLine()) {
+				fileWriter.write(input.nextLine() + "\n");
+			}
+			
+			fileWriter.close();
+		} catch (IOException e) {}
+		
 	}
 	
 	private void editCat() throws FileNotFoundException {
@@ -167,30 +204,56 @@ public class Main {
 		} catch (IOException e) {}
 	}
 	
-	private void configurationOptions() {
+	private void configurationOptions() throws FileNotFoundException {
 		
 		System.out.print("What recipe would you like to configure? ");
 		con = action.nextLine();
 		
+		if (!recipeExists(con)) {
+			System.out.println("Recipe doesn't exist.");
+			configurationOptions();
+			return;
+		}
+		
 		System.out.print("""
 			
-				You can configure categories, ingredients and instructions.
+				You can configure categories, ingredients, rating and instructions.
 				
 					1) categories
 					2) ingredients
-					3) instructions
+					3) rating
+					4) instructions
 					
 				""");
-				System.out.print("What do you want to edit (0 to exit)? [1-3]: ");
+				System.out.print("What do you want to edit (0 to exit)? [1-4]: ");
+	}
+	
+	private boolean recipeExists(String recipeName) throws FileNotFoundException {
+		Scanner files;
+		File dir = new File(".");
+		for (File f : dir.listFiles()) {
+			if (f.getName().equals(recipeName + ".dat")) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private void displayRecipe() throws FileNotFoundException {
 		System.out.print("Recipe name: ");
 		String title = action.nextLine();
+		
+		if (!recipeExists(title)) {
+			System.out.println("Recipe doesn't exist.");
+			displayRecipe();
+			return;
+		}
+					
 		Recipe recipe = new Recipe();
 		Scanner input = new Scanner(new File(title + ".dat"));		
 		String[] categories = input.nextLine().split(", ");				
 		String[] ingredients = input.nextLine().split(", ");
+		String rating = input.nextLine();
 		
 		String instructions = "";
 		while (input.hasNextLine()) {
@@ -201,6 +264,7 @@ public class Main {
 		recipe.setCategories(categories);
 		recipe.setIngredients(ingredients);
 		recipe.setInstructions(instructions);
+		recipe.setRating(rating);
 		System.out.println();
 		System.out.println("|	" + recipe.getTitle());
 		System.out.println("|");
@@ -210,7 +274,19 @@ public class Main {
 		System.out.println("|		Ingredients:");
 		System.out.println("|			" + Arrays.toString(recipe.getIngredients()));
 		System.out.println("|");
+		System.out.println("|		Rating (out of 5):");
+		System.out.println("|			[" + toStars(recipe.getRating()) + "]");
+		System.out.println("|");
 		System.out.println(recipe.getInstructions());
+	}
+	
+	private String toStars(String recipeRating) {
+		int numberOfStars = Integer.parseInt(recipeRating);
+		recipeRating = "";
+		for (int i = 1; i <= numberOfStars; i++) {
+			recipeRating += "*";
+		}
+		return recipeRating;
 	}
 	
 	private void displayOptions() {

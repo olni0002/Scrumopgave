@@ -5,6 +5,7 @@ public class Recipe {
 	private String[] categories;
 	private String[] ingredients;
 	private String instructions;
+	private String rating;
 
 	public String getTitle() {
 		return title;
@@ -36,6 +37,14 @@ public class Recipe {
 	
 	public String getInstructions() {
 		return instructions;
+	}
+	
+	public void setRating(String rating) {
+		this.rating = rating;
+	}
+	
+	public String getRating() {
+		return rating;
 	}
 	
 }
